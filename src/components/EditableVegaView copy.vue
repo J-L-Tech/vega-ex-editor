@@ -6,7 +6,7 @@ import { bar_spec, /*donut_spec, stacked_area_spec, barley_trellis_spec, populat
 
 import CodeEditor from './CodeEditor.vue';
 
-import { invoke } from '@tauri-apps/api';
+
 
 const props = defineProps({
   id: {
@@ -16,9 +16,9 @@ const props = defineProps({
 });
 
 let view: View;
-const editor = ref<InstanceType<typeof CodeEditor>>()
 
 const code: Ref<string> = ref(JSON.stringify(bar_spec, null, 2));
+// const spec: Ref<{}> = ref(bar_spec);
 
 onMounted(() => {
   render(code.value);
@@ -28,26 +28,6 @@ onMounted(() => {
   });
 })
 
-
-async function saveFile() {
-  console.log(await invoke<string>("save", { contents: editor.value?.getCurrentState(), fileExtension: ".json" }));
-}
-
-async function exportSvg() {
-  invoke("save", {contents: await view.toSVG(), fileExtension: ".svg"}); 
-}
-
-async function openFile() {
-  let fileContents = await invoke<string>("open")
-    .then((contents) => { return contents;})
-    .catch((error) => {console.log(error); return "";})
-  console.log(fileContents);
-  code.value = fileContents;
-}
-
-function newFile() {
-  code.value = "{\n\n}";
-}
 
 function render(specStr: string) {
   view = new View(parse(JSON.parse(specStr)), {
@@ -61,11 +41,8 @@ function render(specStr: string) {
 
 <template>
   <div>
-    <button @click="newFile()">New File</button>
-    <button @click="openFile()">Open File</button>
-    <button @click="saveFile()">Save File</button>
-    <button @click="exportSvg">Export Svg</button>
-    <CodeEditor v-model="code" ref="editor" />
+    
+    <CodeEditor v-model="code" />
   </div>
   <div v-bind:id="props.id"></div>
 </template>

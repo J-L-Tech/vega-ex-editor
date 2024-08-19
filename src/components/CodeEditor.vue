@@ -12,16 +12,23 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import { crosshairCursor, drawSelection, dropCursor, EditorView, highlightActiveLine, highlightActiveLineGutter, highlightSpecialChars, keymap, lineNumbers, rectangularSelection } from '@codemirror/view'
 
 // Vue
-import { ModelRef, onMounted, onUnmounted} from "vue";
+import { ModelRef, onMounted, onUnmounted, watchEffect} from "vue";
 
 let editor: EditorView;
 let content: ModelRef<string | undefined, string> = defineModel();
-// let content: Ref<string> = ref("");
 
-function saveChanges(event: KeyboardEvent) {
+function pushChanges(event: KeyboardEvent) {
   if (event.key == "s" && event.ctrlKey) {
     content.value = editor.state.doc.toString();
   }
+}
+
+defineExpose({
+  getCurrentState
+})
+
+function getCurrentState(): string {
+  return editor.state.doc.toString();
 }
 
 onMounted(() => {
@@ -62,16 +69,24 @@ onMounted(() => {
       ],
     }),
   })
+  
+  watchEffect(() => {
+    editor.dispatch({changes: {
+      from: 0,
+      to: editor.state.doc.length,
+      insert: content.value
+    }});
+  });
 
-  window.addEventListener("keyup", saveChanges);
+  window.addEventListener("keyup", pushChanges);
 });
 
 onUnmounted(() => {
-  window.removeEventListener("keyup", saveChanges);
+  window.removeEventListener("keyup", pushChanges);
 })
 
 </script>
 
 <template>
-  <div id="editor"></div>
+  <div style="height: 400px; overflow:scroll;" id="editor"></div>
 </template>
