@@ -7,15 +7,18 @@ import { javascript } from '@codemirror/lang-javascript'
 import { bracketMatching, defaultHighlightStyle, foldGutter, foldKeymap, indentOnInput, syntaxHighlighting } from '@codemirror/language'
 import { lintKeymap } from '@codemirror/lint'
 import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
-import { EditorState } from '@codemirror/state'
-import { oneDark } from '@codemirror/theme-one-dark';
+import { Compartment, EditorState } from '@codemirror/state'
+import { oneDark, } from '@codemirror/theme-one-dark';
+import { solarizedLight, } from '@fsegurai/codemirror-theme-solarized-light';
 import { crosshairCursor, drawSelection, dropCursor, EditorView, highlightActiveLine, highlightActiveLineGutter, highlightSpecialChars, keymap, lineNumbers, rectangularSelection } from '@codemirror/view'
 
 // Vue
 import { ModelRef, onMounted, onUnmounted, watchEffect} from "vue";
 
 let editor: EditorView;
-let content: ModelRef<string | undefined, string> = defineModel();
+let editorTheme: Compartment = new Compartment();
+const content: ModelRef<string | undefined, string> = defineModel('content');
+const darkMode: ModelRef<boolean | undefined, string> = defineModel('dark');
 
 function pushChanges(event: KeyboardEvent) {
   if (event.key == "s" && event.ctrlKey) {
@@ -64,7 +67,7 @@ onMounted(() => {
           ...completionKeymap,
           ...lintKeymap,
         ]),
-        oneDark,
+        editorTheme.of(solarizedLight),
         javascript(),
       ],
     }),
@@ -78,6 +81,15 @@ onMounted(() => {
     }});
   });
 
+  watchEffect(() => {
+    editor.dispatch({
+      effects: editorTheme.reconfigure(
+        darkMode.value ?  oneDark : solarizedLight 
+      )
+    });
+    
+  })
+
   window.addEventListener("keyup", pushChanges);
 });
 
@@ -88,5 +100,5 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div style="height: 400px; overflow:scroll;" id="editor"></div>
+  <div style="max-height: 400px; overflow:scroll;" id="editor"></div>
 </template>

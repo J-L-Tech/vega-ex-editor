@@ -19,8 +19,12 @@
     "@codemirror/state": "^6.4.1",
     "@codemirror/theme-one-dark": "^6.1.2",
     "@codemirror/view": "^6.32.0",
+    "@fsegurai/codemirror-theme-solarized-light": "^6.0.3",
+    "@primevue/themes": "^4.0.5",
     "@tauri-apps/api": "^1",
     "codemirror": "^6.0.1",
+    "primeicons": "^7.0.0",
+    "primevue": "^4.0.5",
     "vega": "^5.30.0",
     "vue": "^3.3.4"
   },

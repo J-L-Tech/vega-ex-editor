@@ -5,8 +5,11 @@ import { View, parse} from 'vega';
 import { bar_spec, /*donut_spec, stacked_area_spec, barley_trellis_spec, population_pyramid_spec */ } from '../spec_examples';
 
 import CodeEditor from './CodeEditor.vue';
+import Button from 'primevue/button';
+import ToggleButton from 'primevue/togglebutton';
 
 import { invoke } from '@tauri-apps/api';
+
 
 const props = defineProps({
   id: {
@@ -20,11 +23,18 @@ const editor = ref<InstanceType<typeof CodeEditor>>()
 
 const code: Ref<string> = ref(JSON.stringify(bar_spec, null, 2));
 
+const darkMode: Ref<boolean> = ref(false)
+
 onMounted(() => {
   render(code.value);
 
   watchEffect(() => {
     render(code.value);
+  });
+
+  watchEffect(() => {
+    const element = document.querySelector('html');
+    element?.classList.toggle('my-app-dark', darkMode.value);
   });
 })
 
@@ -36,6 +46,11 @@ async function saveFile() {
 async function exportSvg() {
   invoke("save", {contents: await view.toSVG(), fileExtension: ".svg"}); 
 }
+
+// TODO
+// async function exportPng() {
+//   invoke("save", {contents: await view.toCanvas(), fileExtension: ".png"}); 
+// }
 
 async function openFile() {
   let fileContents = await invoke<string>("open")
@@ -61,11 +76,14 @@ function render(specStr: string) {
 
 <template>
   <div>
-    <button @click="newFile()">New File</button>
-    <button @click="openFile()">Open File</button>
-    <button @click="saveFile()">Save File</button>
-    <button @click="exportSvg">Export Svg</button>
-    <CodeEditor v-model="code" ref="editor" />
+    <Button icon="pi pi-file-plus"    aria-label="New File"   outlined @click="newFile()" />
+    <Button icon="pi pi-folder-open"  aria-label="Open File"  outlined @click="openFile()" />
+    <Button icon="pi pi-save"         aria-label="Save File"  outlined @click="saveFile()" />
+    <Button icon="pi pi-file-export"  aria-label="Export Svg" outlined @click="exportSvg()" />
+    <ToggleButton on-icon="pi pi-moon" off-icon="pi pi-sun" on-label="Dark Mode" off-label="Light Mode" v-model="darkMode" />
+    <CodeEditor v-model:content="code" v-model:dark="darkMode" ref="editor" />
   </div>
-  <div v-bind:id="props.id"></div>
+  <div style="background-color: white; color: white">
+    <div v-bind:id="props.id"></div>
+  </div>
 </template>
